@@ -45,7 +45,7 @@ function Navbar() {
               </li>
             ))}
           </ul>
-          <NavLink to={routePaths.cart} className="btn btn-outline-primary">
+          <NavLink to={routePaths.cart} className="btn btn-outline-primary d-inline-flex align-items-center gap-2">
             <FiShoppingBag /> Cart
           </NavLink>
         </div>
