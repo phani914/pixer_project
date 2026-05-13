@@ -4,6 +4,9 @@ import routePaths from '../routes/routePaths.js';
 
 const navItems = [
   { label: 'Home', to: routePaths.home },
+  { label: 'Shop', to: routePaths.shop },
+  { label: 'About', to: routePaths.about },
+  { label: 'Contact', to: routePaths.contact },
 ];
 
 function Navbar() {
@@ -42,6 +45,9 @@ function Navbar() {
               </li>
             ))}
           </ul>
+          <NavLink to={routePaths.cart} className="btn btn-outline-primary">
+            <FiShoppingBag /> Cart
+          </NavLink>
         </div>
       </div>
     </nav>
