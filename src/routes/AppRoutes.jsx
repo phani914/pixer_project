@@ -9,6 +9,11 @@ import ProductDetailsPage from '../pages/public/ProductDetailsPage.jsx';
 import RegisterPage from '../pages/public/RegisterPage.jsx';
 import ShopPage from '../pages/public/ShopPage.jsx';
 import UserDashboardPage from '../pages/public/UserDashboardPage.jsx';
+import VendorDashboardLayout from '../pages/vendor/VendorDashboardLayout.jsx';
+import VendorEarningsPage from '../pages/vendor/VendorEarningsPage.jsx';
+import VendorOrdersPage from '../pages/vendor/VendorOrdersPage.jsx';
+import VendorOverviewPage from '../pages/vendor/VendorOverviewPage.jsx';
+import VendorProductsPage from '../pages/vendor/VendorProductsPage.jsx';
 import routePaths from './routePaths.js';
 
 function AppRoutes() {
@@ -24,6 +29,12 @@ function AppRoutes() {
         <Route path={routePaths.dashboard} element={<UserDashboardPage />} />
         <Route path={routePaths.login} element={<LoginPage />} />
         <Route path={routePaths.register} element={<RegisterPage />} />
+        <Route path={routePaths.vendorDashboard} element={<VendorDashboardLayout />}>
+          <Route index element={<VendorOverviewPage />} />
+          <Route path="products" element={<VendorProductsPage />} />
+          <Route path="orders" element={<VendorOrdersPage />} />
+          <Route path="earnings" element={<VendorEarningsPage />} />
+        </Route>
       </Route>
     </Routes>
   );

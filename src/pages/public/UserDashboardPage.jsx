@@ -16,24 +16,32 @@ import { formatRupees } from '../../utils/currency.js';
 
 const dashboardStats = [
   {
+    change: '+18%',
+    chart: [34, 48, 42, 66, 58, 78],
     icon: FiShoppingBag,
     label: 'Orders',
     value: '12',
     helper: '3 this month',
   },
   {
+    change: '+9%',
+    chart: [44, 52, 61, 55, 72, 84],
     icon: FiDownload,
     label: 'Downloads',
     value: '28',
     helper: 'All active',
   },
   {
+    change: '+2',
+    chart: [22, 28, 34, 31, 42, 47],
     icon: FiHeart,
     label: 'Wishlist',
     value: '7',
     helper: '2 price drops',
   },
   {
+    change: '+₹3.2k',
+    chart: [38, 36, 52, 64, 61, 74],
     icon: FiCreditCard,
     label: 'Spent',
     value: formatRupees(18450),
@@ -119,14 +127,22 @@ function UserDashboardPage() {
                 const Icon = stat.icon;
 
                 return (
-                  <article className="dashboard-stat" key={stat.label}>
-                    <span className="dashboard-stat-icon">
-                      <Icon aria-hidden="true" />
-                    </span>
-                    <div>
-                      <span>{stat.label}</span>
+                  <article className="dashboard-stat analytics-card" key={stat.label}>
+                    <div className="analytics-card-top">
+                      <span className="dashboard-stat-icon">
+                        <Icon aria-hidden="true" />
+                      </span>
+                      <span className="analytics-change">{stat.change}</span>
+                    </div>
+                    <div className="analytics-card-body">
+                      <span className="analytics-label">{stat.label}</span>
                       <strong>{stat.value}</strong>
                       <small>{stat.helper}</small>
+                    </div>
+                    <div className="analytics-mini-chart" aria-hidden="true">
+                      {stat.chart.map((height, index) => (
+                        <span key={`${stat.label}-${height}-${index}`} style={{ height: `${height}%` }} />
+                      ))}
                     </div>
                   </article>
                 );

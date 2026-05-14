@@ -6,6 +6,10 @@ const routePaths = {
   contact: '/contact',
   cart: '/cart',
   dashboard: '/dashboard',
+  vendorDashboard: '/vendor',
+  vendorProducts: '/vendor/products',
+  vendorOrders: '/vendor/orders',
+  vendorEarnings: '/vendor/earnings',
   login: '/login',
   register: '/register',
 };
