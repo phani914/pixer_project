@@ -1,10 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { FiLock, FiMail } from 'react-icons/fi';
 import routePaths from '../../routes/routePaths.js';
+import { useAppState } from '../../state/useAppState.js';
 import { validateLogin } from '../../utils/formValidation.js';
 
 function LoginPage() {
+  const { login } = useAppState();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [values, setValues] = useState({
     email: '',
     password: '',
@@ -12,7 +16,14 @@ function LoginPage() {
   });
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
-  const [formMessage, setFormMessage] = useState('');
+  const [formMessage, setFormMessage] = useState(
+    location.state?.message
+      ? {
+          text: location.state.message,
+          type: 'error',
+        }
+      : null,
+  );
 
   const updateField = (event) => {
     const { checked, name, type, value } = event.target;
@@ -23,7 +34,7 @@ function LoginPage() {
 
     setValues(nextValues);
     setErrors(validateLogin(nextValues));
-    setFormMessage('');
+    setFormMessage(null);
   };
 
   const markTouched = (event) => {
@@ -44,7 +55,21 @@ function LoginPage() {
     });
 
     if (Object.keys(nextErrors).length === 0) {
-      setFormMessage('Login details look good.');
+      login({
+        email: values.email,
+        name: values.email.split('@')[0] || 'Pixer user',
+        role: 'buyer',
+      });
+      setFormMessage({
+        text: 'Login details look good.',
+        type: 'success',
+      });
+      navigate(location.state?.from?.pathname ?? routePaths.dashboard, { replace: true });
+    } else {
+      setFormMessage({
+        text: 'Please fix the highlighted fields before logging in.',
+        type: 'error',
+      });
     }
   };
 
@@ -145,7 +170,9 @@ function LoginPage() {
               <button className="btn btn-primary auth-submit" type="submit">
                 Login
               </button>
-              {formMessage && <p className="auth-success">{formMessage}</p>}
+              {formMessage && (
+                <p className={`auth-feedback ${formMessage.type}`}>{formMessage.text}</p>
+              )}
             </form>
             <p className="auth-switch">
               New to Pixer? <Link to={routePaths.register}>Create an account</Link>

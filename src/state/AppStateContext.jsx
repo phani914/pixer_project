@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useReducer,
@@ -16,6 +17,7 @@ import {
 import AppStateContext from './appStateContext.js';
 
 const initialState = {
+  authUser: null,
   cart: [],
   catalog: {
     categories: ['All'],
@@ -40,7 +42,16 @@ const initialState = {
     products: [],
     status: 'loading',
   },
+  notification: null,
 };
+
+function createNotification(type, message) {
+  return {
+    id: Date.now(),
+    message,
+    type,
+  };
+}
 
 function appStateReducer(state, action) {
   switch (action.type) {
@@ -80,6 +91,22 @@ function appStateReducer(state, action) {
           ...state.vendor,
           status: 'error',
         },
+        notification: createNotification(
+          'error',
+          'We could not load marketplace data. Please refresh and try again.',
+        ),
+      };
+    case 'auth/login':
+      return {
+        ...state,
+        authUser: action.payload,
+        notification: createNotification('success', `Welcome, ${action.payload.name}.`),
+      };
+    case 'auth/logout':
+      return {
+        ...state,
+        authUser: null,
+        notification: createNotification('success', 'You have been logged out.'),
       };
     case 'cart/add': {
       const existingItem = state.cart.find((item) => item.id === action.payload.id);
@@ -92,18 +119,27 @@ function appStateReducer(state, action) {
               ? { ...item, quantity: item.quantity + 1 }
               : item,
           ),
+          notification: createNotification(
+            'success',
+            `${action.payload.title} quantity updated in your cart.`,
+          ),
         };
       }
 
       return {
         ...state,
         cart: [...state.cart, { ...action.payload, quantity: 1 }],
+        notification: createNotification(
+          'success',
+          `${action.payload.title} was added to your cart.`,
+        ),
       };
     }
     case 'cart/remove':
       return {
         ...state,
         cart: state.cart.filter((item) => item.id !== action.payload),
+        notification: createNotification('success', 'Product removed from your cart.'),
       };
     case 'cart/decrease':
       return {
@@ -120,6 +156,18 @@ function appStateReducer(state, action) {
       return {
         ...state,
         cart: [],
+        notification: createNotification('success', 'Cart cleared.'),
+      };
+    case 'notification/show':
+      return {
+        ...state,
+        notification: createNotification(action.payload.type, action.payload.message),
+      };
+    case 'notification/clear':
+      return {
+        ...state,
+        notification:
+          state.notification?.id === action.payload ? null : state.notification,
       };
     default:
       return state;
@@ -181,26 +229,89 @@ export function AppStateProvider({ children }) {
     };
   }, []);
 
-  const value = useMemo(() => {
-    const cartCount = state.cart.reduce((total, item) => total + item.quantity, 0);
-    const cartTotal = state.cart.reduce(
+  const addToCart = useCallback((product) => {
+    dispatch({ type: 'cart/add', payload: product });
+  }, []);
+
+  const clearCart = useCallback(() => {
+    dispatch({ type: 'cart/clear' });
+  }, []);
+
+  const decreaseCartItem = useCallback((productId) => {
+    dispatch({ type: 'cart/decrease', payload: productId });
+  }, []);
+
+  const dismissNotification = useCallback((notificationId) => {
+    dispatch({ type: 'notification/clear', payload: notificationId });
+  }, []);
+
+  const login = useCallback((user) => {
+    dispatch({ type: 'auth/login', payload: user });
+  }, []);
+
+  const logout = useCallback(() => {
+    dispatch({ type: 'auth/logout' });
+  }, []);
+
+  const removeFromCart = useCallback((productId) => {
+    dispatch({ type: 'cart/remove', payload: productId });
+  }, []);
+
+  const showError = useCallback((message) => {
+    dispatch({ type: 'notification/show', payload: { message, type: 'error' } });
+  }, []);
+
+  const showSuccess = useCallback((message) => {
+    dispatch({ type: 'notification/show', payload: { message, type: 'success' } });
+  }, []);
+
+  const cartSummary = useMemo(() => ({
+    cartCount: state.cart.reduce((total, item) => total + item.quantity, 0),
+    cartTotal: state.cart.reduce(
       (total, item) => total + item.price * item.quantity,
       0,
-    );
+    ),
+  }), [state.cart]);
 
+  const value = useMemo(() => {
     return {
-      addToCart: (product) => dispatch({ type: 'cart/add', payload: product }),
-      cartCount,
+      addToCart,
+      cartCount: cartSummary.cartCount,
       cartItems: state.cart,
-      cartTotal,
+      cartTotal: cartSummary.cartTotal,
       catalog: state.catalog,
-      clearCart: () => dispatch({ type: 'cart/clear' }),
-      decreaseCartItem: (productId) => dispatch({ type: 'cart/decrease', payload: productId }),
-      removeFromCart: (productId) => dispatch({ type: 'cart/remove', payload: productId }),
+      clearCart,
+      decreaseCartItem,
+      dismissNotification,
+      isAuthenticated: Boolean(state.authUser),
+      login,
+      logout,
+      notification: state.notification,
+      removeFromCart,
+      showError,
+      showSuccess,
       userDashboard: state.userDashboard,
+      user: state.authUser,
       vendor: state.vendor,
     };
-  }, [state]);
+  }, [
+    addToCart,
+    cartSummary,
+    clearCart,
+    decreaseCartItem,
+    dismissNotification,
+    login,
+    logout,
+    removeFromCart,
+    showError,
+    showSuccess,
+    state.cart,
+    state.authUser,
+    state.catalog,
+    state.notification,
+    state.userDashboard,
+    state.vendor,
+  ]);
 
   return (
     <AppStateContext.Provider value={value}>

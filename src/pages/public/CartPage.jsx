@@ -38,6 +38,13 @@ const paymentMethods = [
 
 function CartPage() {
   const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: '',
+    cvv: '',
+    expiry: '',
+    name: '',
+  });
+  const [checkoutMessage, setCheckoutMessage] = useState(null);
   const {
     addToCart,
     cartCount,
@@ -46,11 +53,45 @@ function CartPage() {
     clearCart,
     decreaseCartItem,
     removeFromCart,
+    showSuccess,
   } = useAppState();
   const platformFee = cartItems.length > 0 ? 99 : 0;
   const savings = cartTotal >= 6000 ? 500 : 0;
   const payableTotal = Math.max(cartTotal + platformFee - savings, 0);
   const selectedPaymentMethod = paymentMethods.find((method) => method.id === paymentMethod);
+
+  const updatePaymentDetail = (event) => {
+    const { name, value } = event.target;
+
+    setPaymentDetails((current) => ({
+      ...current,
+      [name]: value,
+    }));
+    setCheckoutMessage(null);
+  };
+
+  const handleCheckout = () => {
+    const missingCardDetails =
+      paymentMethod === 'card' &&
+      (!paymentDetails.name.trim() ||
+        !paymentDetails.cardNumber.trim() ||
+        !paymentDetails.expiry.trim() ||
+        !paymentDetails.cvv.trim());
+
+    if (missingCardDetails) {
+      setCheckoutMessage({
+        text: 'Please complete your card details before checkout.',
+        type: 'error',
+      });
+      return;
+    }
+
+    setCheckoutMessage({
+      text: `Payment method confirmed. Your ${formatRupees(payableTotal)} order is ready.`,
+      type: 'success',
+    });
+    showSuccess('Checkout details look good. You can connect a real payment gateway next.');
+  };
 
   if (cartItems.length === 0) {
     return (
@@ -172,10 +213,13 @@ function CartPage() {
                     >
                       <input
                         type="radio"
-                        name="paymentMethod"
-                        value={method.id}
-                        checked={isSelected}
-                        onChange={() => setPaymentMethod(method.id)}
+                      name="paymentMethod"
+                      value={method.id}
+                      checked={isSelected}
+                        onChange={() => {
+                          setPaymentMethod(method.id);
+                          setCheckoutMessage(null);
+                        }}
                       />
                       <span className="payment-method-icon">
                         <Icon aria-hidden="true" />
@@ -193,20 +237,50 @@ function CartPage() {
                 <div className="payment-card-form">
                   <label>
                     <span>Name on card</span>
-                    <input type="text" placeholder="Priya Sharma" autoComplete="cc-name" />
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Priya Sharma"
+                      autoComplete="cc-name"
+                      value={paymentDetails.name}
+                      onChange={updatePaymentDetail}
+                    />
                   </label>
                   <label>
                     <span>Card number</span>
-                    <input type="text" placeholder="4242 4242 4242 4242" autoComplete="cc-number" inputMode="numeric" />
+                    <input
+                      type="text"
+                      name="cardNumber"
+                      placeholder="4242 4242 4242 4242"
+                      autoComplete="cc-number"
+                      inputMode="numeric"
+                      value={paymentDetails.cardNumber}
+                      onChange={updatePaymentDetail}
+                    />
                   </label>
                   <div className="payment-card-row">
                     <label>
                       <span>Expiry</span>
-                      <input type="text" placeholder="MM / YY" autoComplete="cc-exp" />
+                      <input
+                        type="text"
+                        name="expiry"
+                        placeholder="MM / YY"
+                        autoComplete="cc-exp"
+                        value={paymentDetails.expiry}
+                        onChange={updatePaymentDetail}
+                      />
                     </label>
                     <label>
                       <span>CVV</span>
-                      <input type="password" placeholder="123" autoComplete="cc-csc" inputMode="numeric" />
+                      <input
+                        type="password"
+                        name="cvv"
+                        placeholder="123"
+                        autoComplete="cc-csc"
+                        inputMode="numeric"
+                        value={paymentDetails.cvv}
+                        onChange={updatePaymentDetail}
+                      />
                     </label>
                   </div>
                 </div>
@@ -219,6 +293,11 @@ function CartPage() {
                   </div>
                 </div>
               )}
+              {checkoutMessage ? (
+                <p className={`checkout-message ${checkoutMessage.type}`}>
+                  {checkoutMessage.text}
+                </p>
+              ) : null}
             </section>
           </div>
 
@@ -249,7 +328,11 @@ function CartPage() {
               <span>Total</span>
               <strong>{formatRupees(payableTotal)}</strong>
             </div>
-            <button className="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2" type="button">
+            <button
+              className="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2"
+              type="button"
+              onClick={handleCheckout}
+            >
               Checkout <FiArrowRight aria-hidden="true" />
             </button>
             <div className="cart-assurance">

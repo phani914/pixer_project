@@ -11,7 +11,7 @@ function ContactPage() {
   });
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
-  const [formMessage, setFormMessage] = useState('');
+  const [formMessage, setFormMessage] = useState(null);
 
   const updateField = (event) => {
     const { name, value } = event.target;
@@ -22,7 +22,7 @@ function ContactPage() {
 
     setValues(nextValues);
     setErrors(validateContact(nextValues));
-    setFormMessage('');
+    setFormMessage(null);
   };
 
   const markTouched = (event) => {
@@ -45,7 +45,15 @@ function ContactPage() {
     });
 
     if (Object.keys(nextErrors).length === 0) {
-      setFormMessage('Your message is ready to send.');
+      setFormMessage({
+        text: 'Your message is ready to send.',
+        type: 'success',
+      });
+    } else {
+      setFormMessage({
+        text: 'Please fix the highlighted fields before sending.',
+        type: 'error',
+      });
     }
   };
 
@@ -192,7 +200,9 @@ function ContactPage() {
               <button className="btn btn-primary auth-submit d-inline-flex align-items-center justify-content-center gap-2" type="submit">
                 <FiSend aria-hidden="true" /> Send message
               </button>
-              {formMessage && <p className="auth-success">{formMessage}</p>}
+              {formMessage && (
+                <p className={`auth-feedback ${formMessage.type}`}>{formMessage.text}</p>
+              )}
             </form>
           </div>
         </div>

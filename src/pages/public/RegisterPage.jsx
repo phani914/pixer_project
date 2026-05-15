@@ -1,10 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiLock, FiMail, FiUser } from 'react-icons/fi';
 import routePaths from '../../routes/routePaths.js';
+import { useAppState } from '../../state/useAppState.js';
 import { validateRegister } from '../../utils/formValidation.js';
 
 function RegisterPage() {
+  const { login } = useAppState();
+  const navigate = useNavigate();
   const [values, setValues] = useState({
     name: '',
     email: '',
@@ -14,7 +17,7 @@ function RegisterPage() {
   });
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
-  const [formMessage, setFormMessage] = useState('');
+  const [formMessage, setFormMessage] = useState(null);
 
   const updateField = (event) => {
     const { checked, name, type, value } = event.target;
@@ -25,7 +28,7 @@ function RegisterPage() {
 
     setValues(nextValues);
     setErrors(validateRegister(nextValues));
-    setFormMessage('');
+    setFormMessage(null);
   };
 
   const markTouched = (event) => {
@@ -49,7 +52,21 @@ function RegisterPage() {
     });
 
     if (Object.keys(nextErrors).length === 0) {
-      setFormMessage('Registration details look good.');
+      login({
+        email: values.email,
+        name: values.name,
+        role: 'buyer',
+      });
+      setFormMessage({
+        text: 'Registration details look good.',
+        type: 'success',
+      });
+      navigate(routePaths.dashboard, { replace: true });
+    } else {
+      setFormMessage({
+        text: 'Please fix the highlighted fields before creating your account.',
+        type: 'error',
+      });
     }
   };
 
@@ -227,7 +244,9 @@ function RegisterPage() {
               <button className="btn btn-primary auth-submit" type="submit">
                 Register
               </button>
-              {formMessage && <p className="auth-success">{formMessage}</p>}
+              {formMessage && (
+                <p className={`auth-feedback ${formMessage.type}`}>{formMessage.text}</p>
+              )}
             </form>
             <p className="auth-switch">
               Already have an account? <Link to={routePaths.login}>Login</Link>

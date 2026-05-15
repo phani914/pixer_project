@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { FiLogIn, FiSearch, FiShoppingBag, FiUserPlus } from 'react-icons/fi';
+import { FiLogIn, FiLogOut, FiSearch, FiShoppingBag, FiUserPlus } from 'react-icons/fi';
 import routePaths from '../routes/routePaths.js';
 import { useAppState } from '../state/useAppState.js';
 
@@ -15,7 +15,7 @@ const navItems = [
 
 function Navbar() {
   const [productSearch, setProductSearch] = useState('');
-  const { cartCount } = useAppState();
+  const { cartCount, isAuthenticated, logout, user } = useAppState();
   const navigate = useNavigate();
 
   const handleProductSearch = (event) => {
@@ -75,18 +75,36 @@ function Navbar() {
             />
           </form>
           <div className="nav-actions">
-            <NavLink
-              to={routePaths.login}
-              className="btn btn-link auth-nav-link d-inline-flex align-items-center gap-2"
-            >
-              <FiLogIn aria-hidden="true" /> Login
-            </NavLink>
-            <NavLink
-              to={routePaths.register}
-              className="btn btn-primary d-inline-flex align-items-center gap-2"
-            >
-              <FiUserPlus aria-hidden="true" /> Register
-            </NavLink>
+            {isAuthenticated ? (
+              <>
+                <span className="nav-user-pill">{user.name}</span>
+                <button
+                  className="btn btn-link auth-nav-link d-inline-flex align-items-center gap-2"
+                  type="button"
+                  onClick={() => {
+                    logout();
+                    navigate(routePaths.home);
+                  }}
+                >
+                  <FiLogOut aria-hidden="true" /> Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to={routePaths.login}
+                  className="btn btn-link auth-nav-link d-inline-flex align-items-center gap-2"
+                >
+                  <FiLogIn aria-hidden="true" /> Login
+                </NavLink>
+                <NavLink
+                  to={routePaths.register}
+                  className="btn btn-primary d-inline-flex align-items-center gap-2"
+                >
+                  <FiUserPlus aria-hidden="true" /> Register
+                </NavLink>
+              </>
+            )}
             <NavLink
               to={routePaths.cart}
               className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
