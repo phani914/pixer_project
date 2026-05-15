@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom';
 import { FiArrowRight, FiStar } from 'react-icons/fi';
-import products from '../../data/products.js';
 import routePaths from '../../routes/routePaths.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
-const featuredProducts = products.slice(0, 3);
-
 function HomePage() {
+  const { catalog } = useAppState();
+  const isLoadingFeatured = catalog.status === 'loading';
+
   return (
     <>
       <section className="hero-section">
@@ -38,30 +39,34 @@ function HomePage() {
             <span className="section-kicker">Featured</span>
             <h2>Latest marketplace picks</h2>
           </div>
-          <div className="featured-product-row">
-            {featuredProducts.map((product) => (
-              <article className="featured-product" key={product.id}>
-                <div className="featured-product-icon">
-                  <span
-                    className="featured-product-image"
-                    style={{
-                      backgroundImage: `url(${product.image})`,
-                      backgroundPosition: product.imagePosition,
-                    }}
-                    aria-hidden="true"
-                  />
-                </div>
-                <div>
-                  <span>{product.category}</span>
-                  <h3>{product.title}</h3>
-                  <p>
-                    <FiStar aria-hidden="true" /> {product.rating} rating
-                  </p>
-                </div>
-                <strong>{formatRupees(product.price)}</strong>
-              </article>
-            ))}
-          </div>
+          {isLoadingFeatured ? (
+            <div className="api-state">Loading featured products...</div>
+          ) : (
+            <div className="featured-product-row">
+              {catalog.featuredProducts.map((product) => (
+                <article className="featured-product" key={product.id}>
+                  <div className="featured-product-icon">
+                    <span
+                      className="featured-product-image"
+                      style={{
+                        backgroundImage: `url(${product.image})`,
+                        backgroundPosition: product.imagePosition,
+                      }}
+                      aria-hidden="true"
+                    />
+                  </div>
+                  <div>
+                    <span>{product.category}</span>
+                    <h3>{product.title}</h3>
+                    <p>
+                      <FiStar aria-hidden="true" /> {product.rating} rating
+                    </p>
+                  </div>
+                  <strong>{formatRupees(product.price)}</strong>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>

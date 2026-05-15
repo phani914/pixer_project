@@ -1,16 +1,22 @@
 import { FiActivity, FiDownload, FiEye, FiShoppingBag } from 'react-icons/fi';
-import { vendorOrders, vendorProducts, vendorStats } from '../../data/vendorDashboard.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 const statIcons = [FiActivity, FiShoppingBag, FiEye, FiDownload];
 
 function VendorOverviewPage() {
-  const topProducts = vendorProducts.slice(0, 3);
+  const { vendor } = useAppState();
+  const isLoadingOverview = vendor.status === 'loading';
+  const { overview } = vendor;
+
+  if (isLoadingOverview) {
+    return <div className="api-state">Loading vendor overview...</div>;
+  }
 
   return (
     <>
       <div className="dashboard-stat-grid">
-        {vendorStats.map((stat, index) => {
+        {overview.stats.map((stat, index) => {
           const Icon = statIcons[index];
 
           return (
@@ -39,7 +45,7 @@ function VendorOverviewPage() {
           </div>
 
           <div className="vendor-product-list">
-            {topProducts.map((product) => (
+            {overview.topProducts.map((product) => (
               <article className="vendor-product-row" key={product.id}>
                 <span
                   className="vendor-product-thumb"
@@ -69,7 +75,7 @@ function VendorOverviewPage() {
           </div>
 
           <div className="vendor-order-stack">
-            {vendorOrders.slice(0, 3).map((order) => (
+            {overview.orders.map((order) => (
               <article className="vendor-order-card" key={order.id}>
                 <div>
                   <strong>{order.id}</strong>

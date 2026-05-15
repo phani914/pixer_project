@@ -1,8 +1,11 @@
 import { FiDownload, FiShoppingBag } from 'react-icons/fi';
-import { vendorOrders } from '../../data/vendorDashboard.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 function VendorOrdersPage() {
+  const { vendor } = useAppState();
+  const isLoadingOrders = vendor.status === 'loading';
+
   return (
     <section className="dashboard-panel vendor-page-panel">
       <div className="vendor-page-heading">
@@ -23,17 +26,21 @@ function VendorOrdersPage() {
           <span>Status</span>
           <span>Total</span>
         </div>
-        {vendorOrders.map((order) => (
-          <article className="vendor-table-row" key={order.id}>
-            <span className="vendor-order-id">
-              <FiShoppingBag aria-hidden="true" /> {order.id}
-            </span>
-            <span>{order.buyer}</span>
-            <span>{order.product}</span>
-            <span className="vendor-status">{order.status}</span>
-            <strong>{formatRupees(order.total)}</strong>
-          </article>
-        ))}
+        {isLoadingOrders ? (
+          <div className="api-state vendor-table-state">Loading vendor orders...</div>
+        ) : (
+          vendor.orders.map((order) => (
+            <article className="vendor-table-row" key={order.id}>
+              <span className="vendor-order-id">
+                <FiShoppingBag aria-hidden="true" /> {order.id}
+              </span>
+              <span>{order.buyer}</span>
+              <span>{order.product}</span>
+              <span className="vendor-status">{order.status}</span>
+              <strong>{formatRupees(order.total)}</strong>
+            </article>
+          ))
+        )}
       </div>
     </section>
   );

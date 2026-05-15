@@ -1,8 +1,11 @@
 import { FiEdit3, FiPlus, FiSearch } from 'react-icons/fi';
-import { vendorProducts } from '../../data/vendorDashboard.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 function VendorProductsPage() {
+  const { vendor } = useAppState();
+  const isLoadingProducts = vendor.status === 'loading';
+
   return (
     <section className="dashboard-panel vendor-page-panel">
       <div className="vendor-page-heading">
@@ -28,30 +31,34 @@ function VendorProductsPage() {
           <span>Revenue</span>
           <span>Action</span>
         </div>
-        {vendorProducts.map((product) => (
-          <article className="vendor-table-row" key={product.id}>
-            <div className="vendor-table-product">
-              <span
-                className="vendor-product-thumb"
-                style={{
-                  backgroundImage: `url(${product.image})`,
-                  backgroundPosition: product.imagePosition,
-                }}
-                aria-hidden="true"
-              />
-              <div>
-                <strong>{product.title}</strong>
-                <span>{product.category}</span>
+        {isLoadingProducts ? (
+          <div className="api-state vendor-table-state">Loading vendor products...</div>
+        ) : (
+          vendor.products.map((product) => (
+            <article className="vendor-table-row" key={product.id}>
+              <div className="vendor-table-product">
+                <span
+                  className="vendor-product-thumb"
+                  style={{
+                    backgroundImage: `url(${product.image})`,
+                    backgroundPosition: product.imagePosition,
+                  }}
+                  aria-hidden="true"
+                />
+                <div>
+                  <strong>{product.title}</strong>
+                  <span>{product.category}</span>
+                </div>
               </div>
-            </div>
-            <span className="vendor-status">{product.status}</span>
-            <span>{product.sales}</span>
-            <span>{formatRupees(product.revenue)}</span>
-            <button className="vendor-icon-button" type="button" aria-label={`Edit ${product.title}`}>
-              <FiEdit3 aria-hidden="true" />
-            </button>
-          </article>
-        ))}
+              <span className="vendor-status">{product.status}</span>
+              <span>{product.sales}</span>
+              <span>{formatRupees(product.revenue)}</span>
+              <button className="vendor-icon-button" type="button" aria-label={`Edit ${product.title}`}>
+                <FiEdit3 aria-hidden="true" />
+              </button>
+            </article>
+          ))
+        )}
       </div>
     </section>
   );

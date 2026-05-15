@@ -9,13 +9,25 @@ import {
   FiStar,
   FiUser,
 } from 'react-icons/fi';
-import products from '../../data/products.js';
 import routePaths from '../../routes/routePaths.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 function ProductDetailsPage() {
   const { productSlug } = useParams();
-  const product = products.find((item) => item.slug === productSlug);
+  const { addToCart, catalog } = useAppState();
+  const product = catalog.products.find((item) => item.slug === productSlug);
+  const isLoadingProduct = catalog.status === 'loading';
+
+  if (isLoadingProduct) {
+    return (
+      <section className="page-section">
+        <div className="container">
+          <div className="api-state">Loading product details...</div>
+        </div>
+      </section>
+    );
+  }
 
   if (!product) {
     return (
@@ -76,7 +88,11 @@ function ProductDetailsPage() {
                 <span>Price</span>
                 <strong>{formatRupees(product.price)}</strong>
               </div>
-              <button className="btn btn-primary d-inline-flex align-items-center gap-2" type="button">
+              <button
+                className="btn btn-primary d-inline-flex align-items-center gap-2"
+                type="button"
+                onClick={() => addToCart(product)}
+              >
                 <FiShoppingCart aria-hidden="true" /> Add to cart
               </button>
             </div>

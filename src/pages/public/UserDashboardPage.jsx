@@ -11,7 +11,7 @@ import {
   FiStar,
   FiUser,
 } from 'react-icons/fi';
-import products from '../../data/products.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 const dashboardStats = [
@@ -57,23 +57,9 @@ const dashboardNavItems = [
   { icon: FiSettings, label: 'Settings' },
 ];
 
-const recentActivity = [
-  {
-    title: 'Downloaded Nova SaaS Dashboard UI Kit',
-    time: 'Today, 10:24 AM',
-  },
-  {
-    title: 'Added Productivity App Icon Set to wishlist',
-    time: 'Yesterday, 6:12 PM',
-  },
-  {
-    title: 'Payment method updated',
-    time: 'May 12, 2026',
-  },
-];
-
 function UserDashboardPage() {
-  const libraryProducts = products.slice(0, 4);
+  const { userDashboard } = useAppState();
+  const isLoadingDashboard = userDashboard.status === 'loading';
 
   return (
     <section className="dashboard-section">
@@ -160,25 +146,29 @@ function UserDashboardPage() {
                 </div>
 
                 <div className="dashboard-library-list">
-                  {libraryProducts.map((product) => (
-                    <article className="dashboard-library-item" key={product.id}>
-                      <div className="dashboard-product-icon">
-                        <span
-                          className="dashboard-product-image"
-                          style={{
-                            backgroundImage: `url(${product.image})`,
-                            backgroundPosition: product.imagePosition,
-                          }}
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div>
-                        <h3>{product.title}</h3>
-                        <span>{product.category}</span>
-                      </div>
-                      <strong>{formatRupees(product.price)}</strong>
-                    </article>
-                  ))}
+                  {isLoadingDashboard ? (
+                    <div className="api-state">Loading library...</div>
+                  ) : (
+                    userDashboard.libraryProducts.map((product) => (
+                      <article className="dashboard-library-item" key={product.id}>
+                        <div className="dashboard-product-icon">
+                          <span
+                            className="dashboard-product-image"
+                            style={{
+                              backgroundImage: `url(${product.image})`,
+                              backgroundPosition: product.imagePosition,
+                            }}
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div>
+                          <h3>{product.title}</h3>
+                          <span>{product.category}</span>
+                        </div>
+                        <strong>{formatRupees(product.price)}</strong>
+                      </article>
+                    ))
+                  )}
                 </div>
               </section>
 
@@ -192,15 +182,19 @@ function UserDashboardPage() {
                 </div>
 
                 <div className="dashboard-activity-list">
-                  {recentActivity.map((activity) => (
-                    <article className="dashboard-activity" key={activity.title}>
-                      <span />
-                      <div>
-                        <h3>{activity.title}</h3>
-                        <p>{activity.time}</p>
-                      </div>
-                    </article>
-                  ))}
+                  {isLoadingDashboard ? (
+                    <div className="api-state">Loading activity...</div>
+                  ) : (
+                    userDashboard.activity.map((activity) => (
+                      <article className="dashboard-activity" key={activity.title}>
+                        <span />
+                        <div>
+                          <h3>{activity.title}</h3>
+                          <p>{activity.time}</p>
+                        </div>
+                      </article>
+                    ))
+                  )}
                 </div>
               </section>
             </div>
@@ -214,13 +208,17 @@ function UserDashboardPage() {
                   </div>
                   <FiStar aria-hidden="true" />
                 </div>
-                <div className="dashboard-recommendation">
-                  <FiBarChart2 aria-hidden="true" />
-                  <div>
-                    <h3>{products[2].title}</h3>
-                    <p>{products[2].description}</p>
+                {isLoadingDashboard ? (
+                  <div className="api-state">Loading recommendations...</div>
+                ) : (
+                  <div className="dashboard-recommendation">
+                    <FiBarChart2 aria-hidden="true" />
+                    <div>
+                      <h3>{userDashboard.recommendation.title}</h3>
+                      <p>{userDashboard.recommendation.description}</p>
+                    </div>
                   </div>
-                </div>
+                )}
               </section>
 
               <section className="dashboard-panel dashboard-billing-panel">

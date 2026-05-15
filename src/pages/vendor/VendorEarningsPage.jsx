@@ -1,14 +1,22 @@
 import { FiCreditCard, FiTrendingUp } from 'react-icons/fi';
-import { payoutHistory, vendorStats } from '../../data/vendorDashboard.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 function VendorEarningsPage() {
+  const { vendor } = useAppState();
+  const earnings = vendor.earnings;
+  const isLoadingEarnings = vendor.status === 'loading';
+
+  if (isLoadingEarnings) {
+    return <div className="api-state">Loading vendor earnings...</div>;
+  }
+
   return (
     <>
       <div className="dashboard-content-grid dashboard-bottom-grid">
         <section className="dashboard-panel vendor-earnings-hero">
           <span className="section-kicker">Available balance</span>
-          <strong>{formatRupees(128940)}</strong>
+          <strong>{formatRupees(earnings.availableBalance)}</strong>
           <p>Next payout is scheduled after the current settlement window closes.</p>
           <button className="btn btn-primary d-inline-flex align-items-center gap-2" type="button">
             <FiCreditCard aria-hidden="true" /> Request payout
@@ -19,12 +27,12 @@ function VendorEarningsPage() {
           <div className="dashboard-panel-heading">
             <div>
               <h2>Revenue trend</h2>
-              <p>{vendorStats[0].helper}</p>
+              <p>{earnings.revenueTrendHelper}</p>
             </div>
             <FiTrendingUp aria-hidden="true" />
           </div>
           <div className="vendor-chart-bars" aria-label="Monthly revenue chart">
-            {[48, 62, 54, 78, 68, 92].map((height, index) => (
+            {earnings.revenueTrend.map((height, index) => (
               <span key={height + index} style={{ height: `${height}%` }} />
             ))}
           </div>
@@ -46,7 +54,7 @@ function VendorEarningsPage() {
             <span>Status</span>
             <span>Amount</span>
           </div>
-          {payoutHistory.map((payout) => (
+          {earnings.payoutHistory.map((payout) => (
             <article className="vendor-table-row" key={payout.id}>
               <strong>{payout.id}</strong>
               <span>{payout.date}</span>

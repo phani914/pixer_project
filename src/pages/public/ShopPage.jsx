@@ -11,7 +11,7 @@ import {
   FiShoppingCart,
   FiStar,
 } from 'react-icons/fi';
-import products, { productCategories } from '../../data/products.js';
+import { useAppState } from '../../state/useAppState.js';
 import { formatRupees } from '../../utils/currency.js';
 
 const categoryIcons = {
@@ -27,6 +27,8 @@ function ShopPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTerm = searchParams.get('search') ?? '';
   const [activeCategory, setActiveCategory] = useState('All');
+  const { addToCart, catalog } = useAppState();
+  const isLoadingProducts = catalog.status === 'loading';
 
   const updateSearchTerm = (value) => {
     if (value.trim()) {
@@ -39,9 +41,8 @@ function ShopPage() {
   const filteredProducts = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
-    return products.filter((product) => {
-      const matchesCategory =
-        activeCategory === 'All' || product.category === activeCategory;
+    return catalog.products.filter((product) => {
+      const matchesCategory = activeCategory === 'All' || product.category === activeCategory;
       const matchesSearch =
         !normalizedSearch ||
         product.title.toLowerCase().includes(normalizedSearch) ||
@@ -50,7 +51,7 @@ function ShopPage() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchTerm]);
+  }, [activeCategory, catalog.products, searchTerm]);
 
   return (
     <section className="product-listing-section">
@@ -65,7 +66,7 @@ function ShopPage() {
             </p>
           </div>
           <div className="listing-stat">
-            <strong>{products.length}</strong>
+            <strong>{catalog.products.length}</strong>
             <span>Curated products</span>
           </div>
         </div>
@@ -84,7 +85,7 @@ function ShopPage() {
           </div>
 
           <div className="category-pills" aria-label="Product categories">
-            {productCategories.map((category) => (
+            {catalog.categories.map((category) => (
               <button
                 className={`category-pill ${activeCategory === category ? 'active' : ''}`}
                 key={category}
@@ -97,7 +98,9 @@ function ShopPage() {
           </div>
         </div>
 
-        {filteredProducts.length > 0 ? (
+        {isLoadingProducts ? (
+          <div className="api-state">Loading products...</div>
+        ) : filteredProducts.length > 0 ? (
           <div className="product-grid">
             {filteredProducts.map((product) => {
               const ProductIcon = categoryIcons[product.category] || FiGrid;
@@ -132,7 +135,11 @@ function ShopPage() {
                           <FiDownload aria-hidden="true" /> {product.downloads.toLocaleString()}
                         </span>
                       </div>
-                      <button className="btn btn-primary d-inline-flex align-items-center gap-2" type="button">
+                      <button
+                        className="btn btn-primary d-inline-flex align-items-center gap-2"
+                        type="button"
+                        onClick={() => addToCart(product)}
+                      >
                         <FiShoppingCart aria-hidden="true" /> Add
                       </button>
                     </div>

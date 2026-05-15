@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { FiLogIn, FiSearch, FiShoppingBag, FiUserPlus } from 'react-icons/fi';
 import routePaths from '../routes/routePaths.js';
+import { useAppState } from '../state/useAppState.js';
 
 const navItems = [
   { label: 'Home', to: routePaths.home },
@@ -14,6 +15,7 @@ const navItems = [
 
 function Navbar() {
   const [productSearch, setProductSearch] = useState('');
+  const { cartCount } = useAppState();
   const navigate = useNavigate();
 
   const handleProductSearch = (event) => {
@@ -90,6 +92,7 @@ function Navbar() {
               className="btn btn-outline-primary d-inline-flex align-items-center gap-2"
             >
               <FiShoppingBag aria-hidden="true" /> Cart
+              {cartCount > 0 ? <span className="cart-count">{cartCount}</span> : null}
             </NavLink>
           </div>
         </div>
